@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { TagIcon, PlusIcon, TrashIcon, ArchiveBoxIcon } from "@heroicons/react/24/solid";
 import LoadingSpinner from "../components/loading_spinner.jsx";
+import StatusToggleButton from "../components/status_toggle_button.jsx";
 import {
   list_item_prices_request,
   create_item_price_request,
@@ -47,9 +48,15 @@ export default function ManagerItemPricesPage() {
   }
 
   // permanently removes an item price
-  async function handle_delete(item_price_id) {
-    await delete_item_price_request(item_price_id);
-    load_item_prices();
+  async function handle_delete(item_price) {
+    if (!window.confirm(`Delete "${item_price.item_name}" permanently?`)) return;
+    set_error_message("");
+    try {
+      await delete_item_price_request(item_price._id);
+      load_item_prices();
+    } catch (error) {
+      set_error_message(error.response?.data?.message || "Could not delete this item price");
+    }
   }
 
   return (
@@ -132,12 +139,15 @@ export default function ManagerItemPricesPage() {
                     </span>
                   </td>
                   <td>
-                    <div className="flex items-center gap-3">
-                      <button className="text-sm font-medium text-brand-700 hover:underline" onClick={() => handle_toggle_active(item_price)}>
-                        {item_price.is_active ? "Deactivate" : "Activate"}
-                      </button>
-                      <button className="btn-danger-text" onClick={() => handle_delete(item_price._id)}>
-                        <TrashIcon className="h-3.5 w-3.5" /> Delete
+                    <div className="flex items-center gap-2">
+                      <StatusToggleButton is_active={item_price.is_active} onClick={() => handle_toggle_active(item_price)} />
+                      <button
+                        className="btn-delete"
+                        onClick={() => handle_delete(item_price)}
+                        title="Delete item"
+                        aria-label={`Delete ${item_price.item_name}`}
+                      >
+                        <TrashIcon className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </td>

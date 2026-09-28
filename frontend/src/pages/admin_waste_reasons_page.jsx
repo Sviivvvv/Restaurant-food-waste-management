@@ -1,37 +1,50 @@
 import React, { useEffect, useState } from "react";
-import { ExclamationTriangleIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
+import { ExclamationTriangleIcon, PlusIcon } from "@heroicons/react/24/solid";
 import LoadingSpinner from "../components/loading_spinner.jsx";
-import { list_waste_reasons_request, create_waste_reason_request, delete_waste_reason_request } from "../api/waste_reason_api.js";
+import StatusToggleButton from "../components/status_toggle_button.jsx";
+import {
+  list_waste_reasons_request,
+  create_waste_reason_request,
+  update_waste_reason_request
+} from "../api/waste_reason_api.js";
 
-// admin page: updates the dropdown list of waste causes staff choose from on the quick entry screen
+// admin page: manages the dropdown list of waste causes staff choose from on the quick entry screen
 export default function AdminWasteReasonsPage() {
-  const [reasons, set_reasons] = useState([]);
+  const [waste_reasons, set_waste_reasons] = useState([]);
   const [name, set_name] = useState("");
   const [is_loading, set_is_loading] = useState(true);
+  const [error_message, set_error_message] = useState("");
 
-  function load_reasons() {
+  function load_waste_reasons() {
     set_is_loading(true);
     list_waste_reasons_request()
-      .then(set_reasons)
+      .then(set_waste_reasons)
       .finally(() => set_is_loading(false));
   }
 
-  useEffect(load_reasons, []);
+  useEffect(load_waste_reasons, []);
 
   // adds a new waste reason typed in the input box
   async function handle_submit(event) {
     event.preventDefault();
     if (!name.trim()) return;
-    await create_waste_reason_request({ name });
-    set_name("");
-    load_reasons();
+    set_error_message("");
+    try {
+      await create_waste_reason_request({ name });
+      set_name("");
+      load_waste_reasons();
+    } catch (error) {
+      set_error_message(error.response?.data?.message || "Could not add this waste reason");
+    }
   }
 
-  // permanently removes a waste reason
-  async function handle_delete(reason_id) {
-    await delete_waste_reason_request(reason_id);
-    load_reasons();
+  // toggles a waste reason between active and inactive
+  async function handle_toggle_active(waste_reason) {
+    set_error_message("");
+    await update_waste_reason_request(waste_reason._id, { is_active: !waste_reason.is_active });
+    load_waste_reasons();
   }
+
 
   return (
     <div className="max-w-2xl">
@@ -57,18 +70,26 @@ export default function AdminWasteReasonsPage() {
         </button>
       </form>
 
+      {error_message && <p className="text-sm text-rose-600 mb-4">{error_message}</p>}
+
       <div className="card">
         {is_loading ? (
           <LoadingSpinner />
-        ) : reasons.length === 0 ? (
+        ) : waste_reasons.length === 0 ? (
           <p className="text-sm text-slate-400 py-6 text-center">No waste reasons yet, add one above.</p>
         ) : (
-          reasons.map((reason) => (
-            <div key={reason._id} className="flex justify-between items-center py-2.5 border-b border-slate-100 last:border-0">
-              <span className="badge-amber">{reason.name}</span>
-              <button className="btn-danger-text" onClick={() => handle_delete(reason._id)}>
-                <TrashIcon className="h-3.5 w-3.5" /> Delete
-              </button>
+          waste_reasons.map((waste_reason) => (
+            <div
+              key={waste_reason._id}
+              className="grid grid-cols-[1fr_6rem_7rem] items-center gap-4 py-2.5 border-b border-slate-100 last:border-0"
+            >
+              <span className={`badge-amber justify-self-start ${waste_reason.is_active ? "" : "opacity-60"}`}>{waste_reason.name}</span>
+              <span className={`justify-self-center ${waste_reason.is_active ? "badge-brand" : "badge-slate"}`}>
+                {waste_reason.is_active ? "Active" : "Inactive"}
+              </span>
+              <div className="flex justify-end">
+                <StatusToggleButton is_active={waste_reason.is_active} onClick={() => handle_toggle_active(waste_reason)} />
+              </div>
             </div>
           ))
         )}

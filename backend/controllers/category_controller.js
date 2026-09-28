@@ -1,9 +1,12 @@
 const Category = require("../models/category_model");
 
-// Lists all waste categories
+// Lists all waste categories, optionally scoped to active ones only
 async function list_categories(req, res, next) {
   try {
-    const categories = await Category.find().sort({ name: 1 });
+    const filter = {};
+    if (req.query.active_only === "true") filter.is_active = true;
+
+    const categories = await Category.find(filter).sort({ name: 1 });
     res.json(categories);
   } catch (error) {
     next(error);
@@ -24,7 +27,7 @@ async function create_category(req, res, next) {
   }
 }
 
-// Admin only: edits or removes a waste category
+// Admin only: edits or reactivates a waste category
 async function update_category(req, res, next) {
   try {
     const { name, description, is_active } = req.body;
@@ -45,11 +48,15 @@ async function update_category(req, res, next) {
   }
 }
 
-// Admin only: permanently deletes a category
+// Admin only: deactivates a category instead of deleting it, so past waste entries
+// that reference it stay resolvable. Categorys can only be activated or deactivated, never removed.
 async function delete_category(req, res, next) {
   try {
-    await Category.findByIdAndDelete(req.params.id);
-    res.json({ message: "Category deleted" });
+    const category = await Category.findByIdAndUpdate(req.params.id, { is_active: false }, { new: true });
+    if (!category) {
+      return res.status(404).json({ message: "Category not found" });
+    }
+    res.json({ message: "Category deactivated" });
   } catch (error) {
     next(error);
   }

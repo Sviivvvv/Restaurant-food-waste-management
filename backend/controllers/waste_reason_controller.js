@@ -1,9 +1,12 @@
 const WasteReason = require("../models/waste_reason_model");
 
-// Lists all waste reasons shown on the staff quick entry screen
+// Lists all waste reasons, optionally scoped to active ones only
 async function list_waste_reasons(req, res, next) {
   try {
-    const reasons = await WasteReason.find().sort({ name: 1 });
+    const filter = {};
+    if (req.query.active_only === "true") filter.is_active = true;
+
+    const reasons = await WasteReason.find(filter).sort({ name: 1 });
     res.json(reasons);
   } catch (error) {
     next(error);
@@ -24,7 +27,7 @@ async function create_waste_reason(req, res, next) {
   }
 }
 
-// Admin only: edits or removes a waste reason
+// Admin only: edits or reactivates a waste reason
 async function update_waste_reason(req, res, next) {
   try {
     const { name, is_active } = req.body;
@@ -44,11 +47,15 @@ async function update_waste_reason(req, res, next) {
   }
 }
 
-// Admin only: permanently deletes a waste reason
+// Admin only: deactivates a waste reason instead of deleting it, so past waste entries
+// that reference it stay resolvable. Waste reasons can only be activated or deactivated, never removed.
 async function delete_waste_reason(req, res, next) {
   try {
-    await WasteReason.findByIdAndDelete(req.params.id);
-    res.json({ message: "Waste reason deleted" });
+    const reason = await WasteReason.findByIdAndUpdate(req.params.id, { is_active: false }, { new: true });
+    if (!reason) {
+      return res.status(404).json({ message: "Waste reason not found" });
+    }
+    res.json({ message: "Waste reason deactivated" });
   } catch (error) {
     next(error);
   }

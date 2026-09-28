@@ -64,10 +64,14 @@ async function update_item_price(req, res, next) {
   }
 }
 
-// Manager only: removes an item price
+// Manager only: permanently deletes an item price. Safe to hard delete because waste
+// entries store their own copy of item_name and unit_cost, not a reference to this record.
 async function delete_item_price(req, res, next) {
   try {
-    await ItemPrice.findByIdAndDelete(req.params.id);
+    const item_price = await ItemPrice.findByIdAndDelete(req.params.id);
+    if (!item_price) {
+      return res.status(404).json({ message: "Item price not found" });
+    }
     res.json({ message: "Item price deleted" });
   } catch (error) {
     next(error);

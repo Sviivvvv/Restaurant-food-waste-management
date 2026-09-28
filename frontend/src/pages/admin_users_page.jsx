@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { UsersIcon, UserPlusIcon } from "@heroicons/react/24/solid";
 import LoadingSpinner from "../components/loading_spinner.jsx";
+import StatusToggleButton from "../components/status_toggle_button.jsx";
 import { list_users_request, create_user_request, update_user_request, deactivate_user_request } from "../api/user_api.js";
 import { list_branches_request } from "../api/branch_api.js";
 
@@ -9,7 +10,7 @@ const empty_form = { name: "", email: "", password: "", role: "staff", branch: "
 // small color coded label for a user's role, used in the users table
 const role_badge = { staff: "badge-sky", manager: "badge-violet", admin: "badge-amber" };
 
-// admin page: add new employees, update their details, assign roles, and deactivate accounts
+// admin page: add new employees, update their details, assign roles, and activate or deactivate accounts
 export default function AdminUsersPage() {
   const [users, set_users] = useState([]);
   const [branches, set_branches] = useState([]);
@@ -48,6 +49,12 @@ export default function AdminUsersPage() {
     load_users();
   }
 
+  // reactivates a user account so they can log in again
+  async function handle_activate(user_id) {
+    await update_user_request(user_id, { is_active: true });
+    load_users();
+  }
+
   // deactivates a user account so they can no longer log in
   async function handle_deactivate(user_id) {
     await deactivate_user_request(user_id);
@@ -62,7 +69,7 @@ export default function AdminUsersPage() {
         </div>
         <div>
           <h1 className="page-title">Users</h1>
-          <p className="page-subtitle">Add employees, assign roles, and deactivate accounts</p>
+          <p className="page-subtitle">Add employees, assign roles, and activate or deactivate accounts</p>
         </div>
       </div>
 
@@ -141,11 +148,10 @@ export default function AdminUsersPage() {
                     </span>
                   </td>
                   <td>
-                    {user.is_active && (
-                      <button className="btn-danger-text" onClick={() => handle_deactivate(user._id)}>
-                        Deactivate
-                      </button>
-                    )}
+                    <StatusToggleButton
+                      is_active={user.is_active}
+                      onClick={() => (user.is_active ? handle_deactivate(user._id) : handle_activate(user._id))}
+                    />
                   </td>
                 </tr>
               ))}

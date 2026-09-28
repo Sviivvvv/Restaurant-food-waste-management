@@ -27,6 +27,25 @@ body {
     @apply inline-flex items-center gap-1 text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors;
   }
 
+  /* row actions, shared by every admin/manager list so the colours stay consistent:
+     activate is always green, deactivate is always red, delete is a neutral icon-only
+     button that only turns red on hover so it never competes with the toggle next to it */
+  .btn-row-action {
+    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-md border bg-white text-xs font-semibold transition-colors;
+  }
+
+  .btn-activate {
+    @apply btn-row-action w-[6.5rem] border-brand-200 text-brand-700 hover:bg-brand-50;
+  }
+
+  .btn-deactivate {
+    @apply btn-row-action w-[6.5rem] border-rose-200 text-rose-600 hover:bg-rose-50;
+  }
+
+  .btn-delete {
+    @apply btn-row-action w-8 border-slate-200 text-slate-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600;
+  }
+
   .input-field {
     @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-shadow;
   }

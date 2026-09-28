@@ -18,10 +18,11 @@ export default function StaffRecordWastePage() {
   const [success_message, set_success_message] = useState("");
   const [error_message, set_error_message] = useState("");
 
-  // loads the dropdown options once when the page opens
+  // loads the dropdown options once when the page opens, active items only so a deactivated
+  // category or reason can never be picked for a brand new entry
   useEffect(() => {
-    list_categories_request().then(set_categories);
-    list_waste_reasons_request().then(set_reasons);
+    list_categories_request({ active_only: "true" }).then(set_categories);
+    list_waste_reasons_request({ active_only: "true" }).then(set_reasons);
   }, []);
 
   function handle_field_change(field, value) {
