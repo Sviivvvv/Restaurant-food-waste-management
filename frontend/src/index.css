@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f8fafc;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* small helpers reused across pages, keeps the JSX free of long class lists.
+   wrapped in @layer components so a utility class added alongside them in JSX
+   (like pl-9 on an input) is still free to override their own padding etc. */
+@layer components {
+  .card {
+    @apply bg-white rounded-2xl shadow-card border border-slate-200/70 p-5;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold rounded-lg px-4 py-2.5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 text-sm font-semibold rounded-lg px-4 py-2.5 border border-slate-300 transition-colors;
+  }
+
+  .btn-danger-text {
+    @apply inline-flex items-center gap-1 text-rose-600 hover:text-rose-700 text-sm font-medium transition-colors;
+  }
+
+  .input-field {
+    @apply w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-shadow;
+  }
+
+  .label-text {
+    @apply block text-xs font-semibold uppercase tracking-wide text-slate-500 mb-1.5;
+  }
+
+  .page-title {
+    @apply text-2xl font-bold text-slate-900 tracking-tight;
+  }
+
+  .page-subtitle {
+    @apply text-sm text-slate-500 mt-1;
+  }
+
+  /* pill style used for category, reason, and role labels across tables */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .badge-slate {
+    @apply badge bg-slate-100 text-slate-600;
+  }
+
+  .badge-brand {
+    @apply badge bg-brand-50 text-brand-700;
+  }
+
+  .badge-rose {
+    @apply badge bg-rose-50 text-rose-600;
+  }
+
+  .badge-amber {
+    @apply badge bg-amber-50 text-amber-700;
+  }
+
+  .badge-violet {
+    @apply badge bg-violet-50 text-violet-700;
+  }
+
+  .badge-sky {
+    @apply badge bg-sky-50 text-sky-700;
+  }
+
+  .data-table {
+    @apply w-full text-sm border-separate border-spacing-0;
+  }
+
+  .data-table thead th {
+    @apply text-left text-xs font-semibold uppercase tracking-wide text-slate-500 bg-slate-50 py-3 px-4 first:rounded-l-lg last:rounded-r-lg;
+  }
+
+  .data-table tbody tr {
+    @apply hover:bg-slate-50/80 transition-colors;
+  }
+
+  .data-table tbody td {
+    @apply py-3 px-4 border-b border-slate-100 text-slate-700;
+  }
+}
