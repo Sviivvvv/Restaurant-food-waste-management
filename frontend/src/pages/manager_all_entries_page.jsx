@@ -7,11 +7,18 @@ import { list_all_entries_request } from "../api/waste_entry_api.js";
 import { list_branches_request } from "../api/branch_api.js";
 import { list_categories_request } from "../api/category_api.js";
 import { list_waste_reasons_request } from "../api/waste_reason_api.js";
+import { useAuth } from "../context/auth_context.jsx";
+import { useReportBranchScope } from "../context/scope_context.jsx";
 
-// manager and admin page: full feed of every waste entry, with filters by date, branch, category, reason
+// manager and admin page: full feed of waste entries with filters. Admins see every branch and can filter
+// by branch; managers only ever see their own branch (the server enforces this, the UI just matches it)
 export default function ManagerAllEntriesPage() {
+  const { current_user } = useAuth();
+  const is_admin = current_user.role === "admin";
   const [entries, set_entries] = useState([]);
   const [filters, set_filters] = useState({});
+  // tells the top bar which branch this page is showing, so its name and status appear there
+  useReportBranchScope(filters.branch);
   const [branches, set_branches] = useState([]);
   const [categories, set_categories] = useState([]);
   const [reasons, set_reasons] = useState([]);
@@ -39,7 +46,9 @@ export default function ManagerAllEntriesPage() {
         </div>
         <div>
           <h1 className="page-title">All Waste Records</h1>
-          <p className="page-subtitle">Every entry logged across your restaurant</p>
+          <p className="page-subtitle">
+            {is_admin ? "Every entry logged across all branches" : `Every entry logged at ${current_user.branch?.name || "your branch"}`}
+          </p>
         </div>
       </div>
 
@@ -49,11 +58,11 @@ export default function ManagerAllEntriesPage() {
         branches={branches}
         categories={categories}
         reasons={reasons}
-        show_branch
+        show_branch={is_admin}
       />
 
       <div className="card">
-        {is_loading ? <LoadingSpinner /> : <WasteEntryTable entries={entries} show_branch show_staff />}
+        {is_loading ? <LoadingSpinner /> : <WasteEntryTable entries={entries} show_branch={is_admin} show_staff />}
       </div>
     </div>
   );

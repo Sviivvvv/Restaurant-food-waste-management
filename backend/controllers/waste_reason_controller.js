@@ -23,11 +23,15 @@ async function create_waste_reason(req, res, next) {
     const reason = await WasteReason.create({ name });
     res.status(201).json(reason);
   } catch (error) {
+    // names are unique, so creating or renaming to an existing name is reported clearly
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "A waste reason with this name already exists" });
+    }
     next(error);
   }
 }
 
-// Admin only: edits or reactivates a waste reason
+// Admin only: renames, activates, or deactivates a waste reason
 async function update_waste_reason(req, res, next) {
   try {
     const { name, is_active } = req.body;
@@ -43,6 +47,10 @@ async function update_waste_reason(req, res, next) {
     await reason.save();
     res.json(reason);
   } catch (error) {
+    // names are unique, so creating or renaming to an existing name is reported clearly
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "A waste reason with this name already exists" });
+    }
     next(error);
   }
 }

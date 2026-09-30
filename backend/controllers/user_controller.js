@@ -48,14 +48,23 @@ async function create_user(req, res, next) {
   }
 }
 
-// Admin only: updates a user's details, role, branch, or active status
+// Admin only: updates a user's name, email, role, branch, password, or active status
 async function update_user(req, res, next) {
   try {
-    const { name, role, branch, is_active, password } = req.body;
+    const { name, email, role, branch, is_active, password } = req.body;
     const user = await User.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({ message: "User not found" });
+    }
+
+    // an email change must not collide with another account, since email is the login identifier
+    if (email !== undefined && email.toLowerCase() !== user.email) {
+      const taken = await User.findOne({ email: email.toLowerCase(), _id: { $ne: user._id } });
+      if (taken) {
+        return res.status(409).json({ message: "A user with this email already exists" });
+      }
+      user.email = email.toLowerCase();
     }
 
     if (name !== undefined) user.name = name;
@@ -66,7 +75,7 @@ async function update_user(req, res, next) {
 
     await user.save();
 
-    res.json({ id: user._id, name: user.name, role: user.role, branch: user.branch, is_active: user.is_active });
+    res.json({ id: user._id, name: user.name, email: user.email, role: user.role, branch: user.branch, is_active: user.is_active });
   } catch (error) {
     next(error);
   }

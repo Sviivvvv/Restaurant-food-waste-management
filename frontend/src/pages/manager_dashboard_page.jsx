@@ -10,11 +10,15 @@ import { list_categories_request } from "../api/category_api.js";
 import { list_waste_reasons_request } from "../api/waste_reason_api.js";
 import { format_currency } from "../utils/format_currency.js";
 import { useAuth } from "../context/auth_context.jsx";
+import { useReportBranchScope } from "../context/scope_context.jsx";
 
-// manager and admin page: financial and volume loss totals, top wasted items, and a trend chart
+// manager and admin page: financial and volume loss totals, top wasted items, and a trend chart.
+// managers always see their own branch; admins see every branch combined and can pick one from the filter
 export default function ManagerDashboardPage() {
   const { current_user } = useAuth();
   const [filters, set_filters] = useState({});
+  // tells the top bar which branch this page is showing, so its name and status appear there
+  useReportBranchScope(filters.branch);
   const [summary, set_summary] = useState(null);
   const [top_items, set_top_items] = useState(null);
   const [trends, set_trends] = useState([]);
@@ -22,6 +26,12 @@ export default function ManagerDashboardPage() {
   const [categories, set_categories] = useState([]);
   const [reasons, set_reasons] = useState([]);
   const [is_loading, set_is_loading] = useState(true);
+
+  const is_admin = current_user.role === "admin";
+  const selected_branch = branches.find((branch) => branch._id === filters.branch);
+  const scope_label = is_admin
+    ? selected_branch ? `${selected_branch.name} only` : "Across all branches"
+    : current_user.branch?.name || "Your branch";
 
   // a breakdown panel only makes sense to show when its own filter is not already pinning it to one row
   const show_category_breakdown = !filters.category;
@@ -54,7 +64,10 @@ export default function ManagerDashboardPage() {
         </div>
         <div>
           <h1 className="page-title">Waste Dashboard</h1>
-          <p className="page-subtitle">Financial and volume loss across your restaurant</p>
+          <p className="page-subtitle flex items-center gap-2">
+            Financial and volume loss
+            <span className="badge-slate">{scope_label}</span>
+          </p>
         </div>
       </div>
 
@@ -64,7 +77,7 @@ export default function ManagerDashboardPage() {
         branches={branches}
         categories={categories}
         reasons={reasons}
-        show_branch={current_user.role === "admin"}
+        show_branch={is_admin}
       />
 
       {is_loading || !summary ? (

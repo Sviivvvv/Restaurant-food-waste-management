@@ -3,8 +3,20 @@
 @tailwind utilities;
 
 body {
-  background-color: #f8fafc;
+  background-color: #f6f8fa;
   font-family: "Inter", system-ui, sans-serif;
+}
+
+/* background behind every logged in page: a faint dot grid plus a soft emerald glow at the top,
+   so the space around the white cards has some texture without adding anything to read.
+   fixed attachment keeps the glow at the top of the window while the page scrolls. */
+.app-canvas {
+  background-color: #f6f8fa;
+  background-image:
+    radial-gradient(56rem 26rem at 65% -6rem, rgb(16 185 129 / 0.08), transparent 70%),
+    radial-gradient(rgb(100 116 139 / 0.14) 1px, transparent 1px);
+  background-size: 100% 100%, 22px 22px;
+  background-attachment: fixed;
 }
 
 /* small helpers reused across pages, keeps the JSX free of long class lists.
@@ -44,6 +56,28 @@ body {
 
   .btn-delete {
     @apply btn-row-action w-8 border-slate-200 text-slate-400 hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600;
+  }
+
+  /* inline editing actions: edit is neutral like delete, save is the brand colour, cancel is plain text */
+  .btn-edit {
+    @apply btn-row-action px-3 border-slate-200 text-slate-600 hover:border-brand-200 hover:bg-brand-50 hover:text-brand-700;
+  }
+
+  .btn-save {
+    @apply btn-row-action px-3 border-brand-600 bg-brand-600 text-white hover:bg-brand-700;
+  }
+
+  .btn-cancel {
+    @apply inline-flex h-8 items-center px-2 text-xs font-semibold text-slate-500 hover:text-slate-700;
+  }
+
+  /* table pagination buttons */
+  .page-button {
+    @apply inline-flex h-8 min-w-8 items-center justify-center rounded-md border border-slate-200 bg-white px-2 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .page-button-active {
+    @apply inline-flex h-8 min-w-8 items-center justify-center rounded-md border border-brand-600 bg-brand-600 px-2 text-xs font-semibold text-white;
   }
 
   .input-field {

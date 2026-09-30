@@ -13,6 +13,7 @@ import {
   ArrowRightOnRectangleIcon,
   ArchiveBoxIcon
 } from "@heroicons/react/24/solid";
+import { reset_branch_notice } from "./branch_status_notice.jsx";
 import { useAuth } from "../context/auth_context.jsx";
 
 // turns a full name into two letter initials for the avatar circle, e.g. "Sample Manager" becomes "SM"
@@ -56,6 +57,7 @@ export default function Sidebar() {
   const navigate = useNavigate();
 
   function handle_logout() {
+    reset_branch_notice();
     logout();
     navigate("/login");
   }

@@ -24,7 +24,8 @@ async function create_branch(req, res, next) {
   }
 }
 
-// Admin only: updates a branch's details or assigns a regional manager
+// Admin only: edits a branch's name or location, assigns a regional manager, or activates/deactivates it.
+// Branches are never deleted: waste entries and users reference them, so deactivating keeps history intact.
 async function update_branch(req, res, next) {
   try {
     const { name, location, regional_manager, is_active } = req.body;

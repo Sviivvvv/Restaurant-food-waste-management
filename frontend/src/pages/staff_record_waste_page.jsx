@@ -1,3 +1,4 @@
+import { useAuth } from "../context/auth_context.jsx";
 import React, { useEffect, useState } from "react";
 import { DocumentPlusIcon, CheckCircleIcon } from "@heroicons/react/24/solid";
 import { create_waste_entry_request } from "../api/waste_entry_api.js";
@@ -10,6 +11,9 @@ const empty_form = { category: "", reason: "", quantity_discarded: "", notes: ""
 
 // staff page: quick entry form to log a discarded item, categorize it, and select why it was wasted
 export default function StaffRecordWastePage() {
+  const { current_user } = useAuth();
+  // staff at a deactivated branch can still open the page but cannot save (the server refuses too)
+  const branch_is_inactive = current_user?.branch?.is_active === false;
   const [categories, set_categories] = useState([]);
   const [reasons, set_reasons] = useState([]);
   const [form, set_form] = useState(empty_form);
@@ -71,7 +75,13 @@ export default function StaffRecordWastePage() {
         </div>
       </div>
 
-      <form onSubmit={handle_submit} className="card space-y-4">
+      {branch_is_inactive && (
+        <p className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {current_user.branch.name} is inactive, so new waste entries cannot be recorded right now.
+        </p>
+      )}
+
+      <form onSubmit={handle_submit} className={`card space-y-4 ${branch_is_inactive ? "opacity-60 pointer-events-none" : ""}`}>
         <div>
           <label className="label-text">Item</label>
           <ItemPicker selected_item={selected_item} on_select={set_selected_item} />
@@ -144,7 +154,7 @@ export default function StaffRecordWastePage() {
           <p className="text-sm text-rose-600 bg-rose-50 border border-rose-100 rounded-lg px-3 py-2">{error_message}</p>
         )}
 
-        <button type="submit" disabled={is_submitting} className="btn-primary w-full">
+        <button type="submit" disabled={is_submitting || branch_is_inactive} className="btn-primary w-full">
           {is_submitting ? "Saving..." : "Save entry"}
         </button>
       </form>

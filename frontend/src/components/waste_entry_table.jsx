@@ -1,9 +1,20 @@
 import React from "react";
 import { ArchiveBoxIcon } from "@heroicons/react/24/solid";
 import { format_currency } from "../utils/format_currency.js";
+import { useTableControls, TableSearch, TablePagination, NoSearchResults } from "./table_controls.jsx";
 
 // table that lists waste entries, show_branch and show_staff control optional columns
+// newest entries first, with search and pagination
 export default function WasteEntryTable({ entries, show_branch, show_staff }) {
+  const table = useTableControls(entries, (entry) => [
+    entry.item_name,
+    entry.category?.name,
+    entry.reason?.name,
+    entry.branch?.name,
+    entry.recorded_by?.name,
+    entry.notes
+  ]);
+
   if (!entries || entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-14 text-slate-400">
@@ -14,7 +25,12 @@ export default function WasteEntryTable({ entries, show_branch, show_staff }) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div>
+      <TableSearch table={table} placeholder="Search item, category, reason..." />
+      {table.page_rows.length === 0 ? (
+        <NoSearchResults table={table} />
+      ) : (
+      <div className="overflow-x-auto">
       <table className="data-table">
         <thead>
           <tr>
@@ -29,7 +45,7 @@ export default function WasteEntryTable({ entries, show_branch, show_staff }) {
           </tr>
         </thead>
         <tbody>
-          {entries.map((entry) => (
+          {table.page_rows.map((entry) => (
             <tr key={entry._id}>
               <td className="text-slate-500 whitespace-nowrap">
                 {new Date(entry.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
@@ -47,6 +63,9 @@ export default function WasteEntryTable({ entries, show_branch, show_staff }) {
           ))}
         </tbody>
       </table>
+      </div>
+      )}
+      <TablePagination table={table} />
     </div>
   );
 }

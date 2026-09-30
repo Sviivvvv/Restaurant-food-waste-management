@@ -80,7 +80,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-12 bg-slate-50">
+      <div className="app-canvas flex-1 flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-sm">
           <div className="lg:hidden flex items-center gap-2 mb-8 justify-center">
             <div className="h-8 w-8 rounded-lg bg-brand-600 flex items-center justify-center">

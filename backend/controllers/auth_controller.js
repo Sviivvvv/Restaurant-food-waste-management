@@ -10,7 +10,7 @@ async function login(req, res, next) {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).populate("branch", "name");
+    const user = await User.findOne({ email: email.toLowerCase() }).populate("branch", "name is_active");
 
     if (!user || !user.is_active) {
       return res.status(401).json({ message: "Invalid email or password" });
@@ -41,7 +41,7 @@ async function login(req, res, next) {
 // Returns the currently logged in user, used by the frontend to restore a session
 async function get_current_user(req, res, next) {
   try {
-    const user = await User.findById(req.user._id).select("-password_hash").populate("branch", "name");
+    const user = await User.findById(req.user._id).select("-password_hash").populate("branch", "name is_active");
     res.json(user);
   } catch (error) {
     next(error);

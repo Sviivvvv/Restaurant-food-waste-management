@@ -1,10 +1,10 @@
 const WasteEntry = require("../models/waste_entry_model");
 const { build_filter } = require("./waste_entry_controller");
 
-// Manager and Admin: total financial loss and total weight, broken down by category and by reason
+// Manager and Admin (managers are scoped to their own branch): total financial loss and total weight, broken down by category and by reason
 async function get_summary(req, res, next) {
   try {
-    const filter = build_filter(req.query);
+    const filter = build_filter(req.query, req.user);
 
     const totals = await WasteEntry.aggregate([
       { $match: filter },
@@ -51,7 +51,7 @@ async function get_summary(req, res, next) {
 // Manager and Admin: top discarded items ranked by weight and by dollar loss
 async function get_top_items(req, res, next) {
   try {
-    const filter = build_filter(req.query);
+    const filter = build_filter(req.query, req.user);
     const limit = Number(req.query.limit) || 10;
 
     const by_weight = await WasteEntry.aggregate([
@@ -77,7 +77,7 @@ async function get_top_items(req, res, next) {
 // Manager and Admin: waste totals grouped by day, for the trend line chart
 async function get_trends(req, res, next) {
   try {
-    const filter = build_filter(req.query);
+    const filter = build_filter(req.query, req.user);
 
     const daily_totals = await WasteEntry.aggregate([
       { $match: filter },

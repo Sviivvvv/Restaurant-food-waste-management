@@ -23,11 +23,15 @@ async function create_category(req, res, next) {
     const category = await Category.create({ name, description });
     res.status(201).json(category);
   } catch (error) {
+    // names are unique, so creating or renaming to an existing name is reported clearly
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "A category with this name already exists" });
+    }
     next(error);
   }
 }
 
-// Admin only: edits or reactivates a waste category
+// Admin only: renames, activates, or deactivates a waste category
 async function update_category(req, res, next) {
   try {
     const { name, description, is_active } = req.body;
@@ -44,6 +48,10 @@ async function update_category(req, res, next) {
     await category.save();
     res.json(category);
   } catch (error) {
+    // names are unique, so creating or renaming to an existing name is reported clearly
+    if (error.code === 11000) {
+      return res.status(409).json({ message: "A category with this name already exists" });
+    }
     next(error);
   }
 }

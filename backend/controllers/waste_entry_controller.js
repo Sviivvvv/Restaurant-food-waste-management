@@ -1,11 +1,14 @@
 const mongoose = require("mongoose");
 const WasteEntry = require("../models/waste_entry_model");
 const ItemPrice = require("../models/item_price_model");
+const Branch = require("../models/branch_model");
 
 // Builds a MongoDB filter object from the query string, shared by list endpoints and report aggregations.
+// When the logged in user is a manager, the branch is always forced to their own branch, whatever the
+// client sent, so a manager can never read another branch's entries or totals by editing the request.
 // Values are cast to ObjectId here because aggregate() does not auto cast the way find() does,
 // so a raw string would silently match nothing once a specific branch, category, or reason is picked.
-function build_filter(query) {
+function build_filter(query, user) {
   const filter = {};
 
   if (query.branch && mongoose.Types.ObjectId.isValid(query.branch)) filter.branch = new mongoose.Types.ObjectId(query.branch);
@@ -18,6 +21,9 @@ function build_filter(query) {
     if (query.start_date) filter.createdAt.$gte = new Date(query.start_date);
     if (query.end_date) filter.createdAt.$lte = new Date(query.end_date);
   }
+
+  // a manager with no branch assigned matches nothing (every entry has a branch), rather than everything
+  if (user && user.role === "manager") filter.branch = user.branch ? user.branch._id || user.branch : null;
 
   return filter;
 }
@@ -36,6 +42,12 @@ async function create_waste_entry(req, res, next) {
 
     if (!item_name || !category || !reason || !quantity_discarded) {
       return res.status(400).json({ message: "Item name, category, reason, and quantity are required" });
+    }
+
+    // a deactivated branch keeps its history but stops accepting new waste entries
+    const branch = req.user.branch ? await Branch.findById(req.user.branch).select("is_active") : null;
+    if (!branch || !branch.is_active) {
+      return res.status(403).json({ message: "Your branch is not active, so new waste entries cannot be recorded" });
     }
 
     const item_price = await resolve_item_price(item_name, req.user.branch);
@@ -85,10 +97,10 @@ async function list_my_entries(req, res, next) {
   }
 }
 
-// Manager and Admin: lists every waste entry, with optional filters from the query string
+// Manager and Admin: lists waste entries with optional filters; managers only ever see their own branch
 async function list_all_entries(req, res, next) {
   try {
-    const filter = build_filter(req.query);
+    const filter = build_filter(req.query, req.user);
 
     const entries = await WasteEntry.find(filter)
       .populate("category", "name")

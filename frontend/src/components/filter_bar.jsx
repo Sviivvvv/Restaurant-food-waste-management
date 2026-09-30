@@ -40,7 +40,10 @@ export default function FilterBar({ filters, on_change, branches, categories, re
             <select className="input-field" value={filters.branch || ""} onChange={(e) => handle_field_change("branch", e.target.value)}>
               <option value="">All branches</option>
               {branches.map((branch) => (
-                <option key={branch._id} value={branch._id}>{branch.name}</option>
+                <option key={branch._id} value={branch._id}>
+                  {branch.name}
+                  {branch.is_active === false ? " (inactive)" : ""}
+                </option>
               ))}
             </select>
           </div>
