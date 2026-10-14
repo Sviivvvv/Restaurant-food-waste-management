@@ -134,7 +134,7 @@ export default function LoginPage() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-200">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">Try a demo account</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400 mb-3">demo accounts</p>
             <div className="grid grid-cols-3 gap-2">
               {demo_accounts.map((account) => (
                 <button
